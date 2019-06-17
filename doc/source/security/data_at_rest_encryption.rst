@@ -7,14 +7,47 @@ Data at Rest Encryption
 .. contents::
    :local:
 
+.. rubric:: Overview
+
+Data security and compliance are important concerns for any enterprise solution. Data at rest is inactive data stored physically in any format, disk or tape. A person with access to the stored data can see the data using traditional UNIX commands. Encryption of the stored data is a common requirement for data governance, compliance, and security.
+
+Encrypting data has the following advantages:
+
+* Strong encryption for the tablespace
+* Keys are securely stored
+* Keys are rotated
+
+The architecture for data encryption uses the following components of a keyring plugin:
+
+  - Master encryption key
+  - Tablespace keys
+
+After the installing the keyring plugin, the plugin must be configured.
+
+The following information is discussed:
+
+ - Prerequisites
+ - Keyring encryption
+  + Changing Keyring encryption
+ - Innodb encryption
+ - System key rotation
+ - Binlog encryption
+   + Undo and redo log encryption
+ - System tablespace and doublewrite buffers encryption
+ - Usage
+ - Data Scrubbing
+
 .. _data-at-rest-encryption.prerequisite:
 
-Prerequisites
-================================================================================
+.. rubric:: Prerequisites
 
 Data at rest encryption requires that a keyring plugin, such as `keyring_file
 <https://dev.mysql.com/doc/refman/8.0/en/keyring-file-plugin.html>`_ or
-:ref:`keyring_vault_plugin` be installed and already loaded. To load the
+:ref:`keyring_vault_plugin` be installed and already loaded.
+
+.. rubric:: Keyring encryption
+
+To load the
 ``keyring`` plugin when starting the server, use the ``--early-plugin-load``
 option:
 
@@ -22,7 +55,7 @@ option:
 
    $ mysqld --early-plugin-load="keyring_file=keyring_file.so"
 
-Altermatively, you can add this option to your configuration file:
+Alternatively, you can add this option to your configuration file:
 
 .. code-block:: guess
 
@@ -41,10 +74,10 @@ Altermatively, you can add this option to your configuration file:
       - `The --early-plugin-load Option <https://dev.mysql.com/doc/refman/8.0/en/server-options.html#option_mysqld_early-plugin-load>`_
 
 
+
 .. _data-at-rest-encryption.keyring.changing-default:
 
-Changing the Default Keyring Encryption
-================================================================================
+.. rubric:: Changing the Keyring encryption
 
 When encryption is enabled and the server is configured to use the KEYRING
 encryption, new tables use the default encryption key.
@@ -57,8 +90,8 @@ You many change this default encryption via the
    Configuring the way how tables are encrypted
       :variable:`innodb_encrypt_tables`
 
-System Variables
---------------------------------------------------------------------------------
+.. rubric:: System Variables
+
 
 .. variable:: innodb_default_encryption_key_id
 
@@ -68,7 +101,9 @@ System Variables
    :vartype: Numeric
    :default: 0
 
-The ID of the default encryption key. By default, this variable contains **0**
+.. rubric:: Default Encryption Key ID
+
+By default, this variable contains **0**
 to encrypt new tables with the latest version of the key ``percona_innodb-0``.
 
 To change the default value use the following syntax:
@@ -81,36 +116,253 @@ Here, **NEW_ID** is an unsigned 32-bit integer.
 
 .. _data-at-rest-encryption.innodb-system-tablespace:
 
-InnoDB System Tablespace Encryption
-================================================================================
 
-:Availabiliity: This feature is **Alpha** quality
 
-The InnoDB system tablespace is encrypted by using master key encryption. The
-server must be started with the ``--bootstrap`` option.
+   .. rubric:: Key Rotation
 
-If the variable :variable:`innodb_sys_tablespace_encrypt` is set to ON and the
-server has been started in the bootstrap mode, you may create an encrypted table
-as follows:
 
-.. code-block:: guess
+   The keyring management is enabled for each tablespace separately when you set
+   the encryption in the ``ENCRYPTION`` clause, to `KEYRING` in the supported SQL
+   statement:
 
-   mysql> CREATE TABLE ... TABLESPACE=innodb_system ENCRYPTION='Y'
+   - CREATE TABLE .. ENCRYPTION='KEYRING`
+   - ALTER TABLE ... ENCRYPTION='KEYRING'
+   - CREATE TABLESPACE tablespace_name … ENCRYPTION=’KEYRING’
 
-.. note::
+   .. note::
 
-   You cannot encrypt existing tables in the System tablespace.
+      Running ``ALTER TABLE .. ENCRYPTION=’Y’`` on the tablespace created with
+      ``ENCRYPTION=’KEYRING’`` converts the table back to the existing MySQL
+      scheme.
 
-It is not possible to convert the system tablespace from encrypted to
-unencrypted or vice versa. A new instance should be created and user tables must
-be transferred to the desired instance.
+   .. _keyring_vault_plugin:
 
-You can encrypt the already encrypted InnoDB system tablespace (key rotation)
-with a new master key by running the following ``ALTER INSTANCE`` statement:
+   .. rubric:: Keyring Vault plugin
 
-.. code-block:: guess
 
-   mysql> ALTER INSTANCE ROTATE INNODB MASTER KEY
+   The ``keyring_vault`` plugin can be used to store the encryption keys inside the
+   `Hashicorp Vault server <https://www.vaultproject.io>`_.
+
+   .. important::
+
+      ``keyring_vault`` plugin only works with kv secrets engine version 1.
+
+      .. seealso::
+
+         HashiCorp Documentation: More information about ``kv`` secrets engine
+            https://www.vaultproject.io/docs/secrets/kv/kv-v1.html
+
+   .. rubric:: Installation
+
+
+   The safest way to load the plugin is to do it on the server startup by
+   using `--early-plugin-load variable
+   <https://dev.mysql.com/doc/refman/8.0/en/server-options.html#option_mysqld_early-plugin-load>`_
+   option:
+
+   .. code-block:: bash
+
+     --early-plugin-load="keyring_vault=keyring_vault.so" \
+     --loose-keyring_vault_config="/home/mysql/keyring_vault.conf"
+
+   It should be loaded this way to be able to facilitate recovery for encrypted
+   tables.
+
+   .. warning::
+
+     If server should be started with several plugins loaded early,
+     ``--early-plugin-load`` should contain their list separated by semicolons. Also
+     it's a good practice to put this list in double quotes so that semicolons
+     do not create problems when executed in a script.
+
+   Apart from installing the plugin you also need to set the
+   :variable:`keyring_vault_config` variable. This variable should point to the
+   keyring_vault configuration file, whose contents are discussed below.
+
+   This plugin supports the SQL interface for keyring key management described in
+   `General-Purpose Keyring Key-Management Functions
+   <https://dev.mysql.com/doc/refman/8.0/en/keyring-udfs-general-purpose.html>`_
+   manual.
+
+   To enable the functions you'll need to install the ``keyring_udf`` plugin:
+
+   .. code-block:: mysql
+
+     mysql> INSTALL PLUGIN keyring_udf SONAME 'keyring_udf.so';
+
+   .. rubric:: Usage
+
+
+   On plugin initialization ``keyring_vault`` connects to the Vault server using
+   credentials stored in the credentials file. Location of this file is specified
+   in by :variable:`keyring_vault_config`. On successful initialization it
+   retrieves keys signatures and stores them inside an in-memory hash map.
+
+   Configuration file should contain the following information:
+
+   * ``vault_url`` - the address of the server where Vault is running. It can be a
+     named address, like one in the following example, or just an IP address. The
+     important part is that it should begin with ``https://``.
+
+   * ``secret_mount_point`` - the name of the mount point where ``keyring_vault``
+     will store keys.
+
+   * ``token`` - a token generated by the Vault server, which ``keyring_vault``
+     will further use when connecting to the Vault. At minimum, this token should
+     be allowed to store new keys in a secret mount point (when ``keyring_vault``
+     is used only for transparent data encryption, and not for ``keyring_udf``
+     plugin). If ``keyring_udf`` plugin is combined with ``keyring_vault``, this
+     token should be also allowed to remove keys from the Vault (for the
+     ``keyring_key_remove`` operation supported by the ``keyring_udf`` plugin).
+
+   * ``vault_ca [optional]`` - this variable needs to be specified only when the
+     Vault's CA certificate is not trusted by the machine that is going to connect
+     to the Vault server. In this case this variable should point to CA
+     certificate that was used to sign Vault's certificates.
+
+   .. warning::
+
+      Each ``secret_mount_point`` should be used by only one server - otherwise
+      mixing encryption keys from different servers may lead to undefined
+      behavior.
+
+   An example of the configuration file looks like this: ::
+
+     vault_url = https://vault.public.com:8202
+     secret_mount_point = secret
+     token = 58a20c08-8001-fd5f-5192-7498a48eaf20
+     vault_ca = /data/keyring_vault_confs/vault_ca.crt
+
+   When a key is fetched from a ``keyring`` for the first time the
+   ``keyring_vault`` communicates with the Vault server, and retrieves the key
+   type and data. Next it queries the Vault server for the key type and data and
+   caches it locally.
+
+   Key deletion will permanently delete key from the in-memory hash map and the
+   Vault server.
+
+   .. note::
+
+     |Percona XtraBackup| currently doesn't support backup of tables encrypted
+     with :ref:`keyring_vault_plugin`.
+
+   .. rubric:: System Variables
+
+
+   .. variable:: keyring_vault_config
+
+     :cli: ``--keyring-vault-config``
+     :dyn: Yes
+     :scope: Global
+     :vartype: Text
+     :default:
+
+   This variable is used to define the location of the
+   :ref:`keyring_vault_plugin` configuration file.
+
+   .. variable:: keyring_vault_timeout
+
+     :cli: ``--keyring-vault-timeout``
+     :dyn: Yes
+     :scope: Global
+     :vartype: Numeric
+     :default: ``15``
+
+   This variable allows to set the duration in seconds for the Vault server
+   connection timeout. Default value is ``15``. Allowed range is from ``1``
+   second to ``86400`` seconds (24 hours). The timeout can be also completely
+   disabled to wait infinite amount of time by setting this variable to ``0``.
+
+   .. _data-at-rest-encryption.data-scrubbing:
+
+   .. rubric:: InnoDB System Tablespace Encryption
+
+
+   :Availabiliity: This feature is **Alpha** quality
+
+   The InnoDB system tablespace is encrypted by using master key encryption. The
+   server must be started with the ``--bootstrap`` option.
+
+   If the variable :variable:`innodb_sys_tablespace_encrypt` is set to ON and the
+   server has been started in the bootstrap mode, you may create an encrypted table
+   as follows:
+
+   .. code-block:: guess
+
+      mysql> CREATE TABLE ... TABLESPACE=innodb_system ENCRYPTION='Y'
+
+   .. note::
+
+      You cannot encrypt existing tables in the System tablespace.
+
+   It is not possible to convert the system tablespace from encrypted to
+   unencrypted or vice versa. A new instance should be created and user tables must
+   be transferred to the desired instance.
+
+   You can encrypt the already encrypted InnoDB system tablespace (key rotation)
+   with a new master key by running the following ``ALTER INSTANCE`` statement:
+
+   .. code-block:: guess
+
+      mysql> ALTER INSTANCE ROTATE INNODB MASTER KEY
+
+.. rubric:: InnoDB General Tablespace Encryption
+
+
+   In |Percona Server| :rn:`5.7.20-18` existing tablespace encryption support has
+   been extended to handle general tablespaces. A general tablespace is either
+   fully encrypted, covering all the tables inside, or not encrypted at all.
+   It is not possible to have encrypted only some of the tables in a general
+   tablespace.
+
+   This feature extends the  `CREATE TABLESPACE
+   <https://dev.mysql.com/doc/refman/8.0/en/create-tablespace.html>`_
+   statement to accept the ``ENCRYPTION='Y/N'`` option.
+
+   .. note::
+
+      Prior to |Percona Server| 8.0.13, the ``ENCRYPTION`` option was specific to
+      the ``CREATE TABLE`` or ``SHOW CREATE TABLE`` statement.  In |Percona Server|
+      8.0.13, this option becomes a tablespace attribute and is not allowed with
+      the ``CREATE TABLE`` or ``SHOW CREATE TABLE`` statement except for
+      file-per-table tablespaces.
+
+
+   .. rubric:: Usage
+
+
+   General tablespace encryption is enabled by the following syntax extension:
+
+   .. code-block:: mysql
+
+      mysql> CREATE TABLESPACE tablespace_name ... ENCRYPTION='Y'
+
+   Attempts to create or to move tables, including partitioned ones, to a general
+   tablespace with an incompatible encryption setting are diagnosed and aborted.
+
+   As you cannot move tables between encrypted and unencrypted tablespaces,
+   you will need to create another table, add it to a specific tablespace and run
+   ``INSERT INTO SELECT`` from the table you want to move from, and then you will
+   get encrypted or decrypted table with your desired content.
+
+   .. rubric:: Example
+
+   To create an encrypted tablespace run: :mysql:`CREATE TABLESPACE foo ADD DATAFILE 'foo.ibd' ENCRYPTION='Y';`
+
+   To add an encrypted table to that table space run: :mysql:`CREATE TABLE t1 (a INT, b TEXT) TABLESPACE foo ENCRYPTION="Y";`
+
+   Trying to add unencrypted table to this table space will result in an error:
+
+   .. code-block:: mysql
+
+      mysql> CREATE TABLE t3 (a INT, b TEXT) TABLESPACE foo ENCRYPTION="N";
+      ERROR 1478 (HY000): InnoDB: Tablespace `foo` can contain only an ENCRYPTED tables.
+
+   .. note::
+
+      |Percona XtraBackup| currently doesn't support backup of encrypted general
+      tablespaces.
+
 
 .. rubric:: Doublewrite Buffers
 
@@ -134,8 +386,8 @@ unencrypted.
    where the InnoDB system tablespace has been encrypted.
 
 
-System variables
---------------------------------------------------------------------------------
+.. rubric:: System variables
+
 
 .. variable:: innodb_sys_tablespace_encrypt
 
@@ -167,73 +419,16 @@ the key of the tablespace where the parallel doublewrite buffer is used.
 
 .. _innodb_general_tablespace_encryption:
 
-InnoDB General Tablespace Encryption
-================================================================================
 
-In |Percona Server| :rn:`5.7.20-18` existing tablespace encryption support has
-been extended to handle general tablespaces. A general tablespace is either
-fully encrypted, covering all the tables inside, or not encrypted at all.
-It is not possible to have encrypted only some of the tables in a general
-tablespace.
+.. rubric:: Checking
 
-This feature extends the  `CREATE TABLESPACE
-<https://dev.mysql.com/doc/refman/8.0/en/create-tablespace.html>`_
-statement to accept the ``ENCRYPTION='Y/N'`` option.
-
-.. note::
-
-   Prior to |Percona Server| 8.0.13, the ``ENCRYPTION`` option was specific to
-   the ``CREATE TABLE`` or ``SHOW CREATE TABLE`` statement.  In |Percona Server|
-   8.0.13, this option becomes a tablespace attribute and is not allowed with
-   the ``CREATE TABLE`` or ``SHOW CREATE TABLE`` statement except for
-   file-per-table tablespaces.
-
-
-Usage
-================================================================================
-
-General tablespace encryption is enabled by the following syntax extension:
-
-.. code-block:: mysql
-
-   mysql> CREATE TABLESPACE tablespace_name ... ENCRYPTION='Y'
-
-Attempts to create or to move tables, including partitioned ones, to a general
-tablespace with an incompatible encryption setting are diagnosed and aborted.
-
-As you cannot move tables between encrypted and unencrypted tablespaces,
-you will need to create another table, add it to a specific tablespace and run
-``INSERT INTO SELECT`` from the table you want to move from, and then you will
-get encrypted or decrypted table with your desired content.
-
-Example
-================================================================================
-
-To create an encrypted tablespace run: :mysql:`CREATE TABLESPACE foo ADD DATAFILE 'foo.ibd' ENCRYPTION='Y';`
-
-To add an encrypted table to that table space run: :mysql:`CREATE TABLE t1 (a INT, b TEXT) TABLESPACE foo ENCRYPTION="Y";`
-
-Trying to add unencrypted table to this table space will result in an error:
-
-.. code-block:: mysql
-
-   mysql> CREATE TABLE t3 (a INT, b TEXT) TABLESPACE foo ENCRYPTION="N";
-   ERROR 1478 (HY000): InnoDB: Tablespace `foo` can contain only an ENCRYPTED tables.
-
-.. note::
-
-   |Percona XtraBackup| currently doesn't support backup of encrypted general
-   tablespaces.
-
-Checking
-================================================================================
 
 If there is a general tablespace which doesn't include tables yet, sometimes
 user needs to find out whether it is encrypted or not (this task is easier for
 single tablespaces since you can check table info).
 
 A ``flag`` field in the ``INFORMATION_SCHEMA.INNODB_TABLESPACES`` has bit
-number 13 set if tablespace is encrypted. This bit can be ckecked with 
+number 13 set if tablespace is encrypted. This bit can be ckecked with
 ``flag & 8192`` expression in the following way:
 
 .. code-block:: mysql
@@ -255,8 +450,8 @@ number 13 set if tablespace is encrypted. This bit can be ckecked with
       +-------+-----------+-------+-----------+
       4 rows in set (0.01 sec)
 
-System Variables
-----------------
+.. rubric:: System Variables
+
 
 .. variable:: innodb_temp_tablespace_encrypt
 
@@ -366,7 +561,7 @@ keyring, |Percona Server| will create it with version 1. If a new
 ``CREATE TABLE`` statement fails
 
 .. rubric:: FORCE_KEYRING
-	    
+
 :Availability: This value is **Alpha** quality
 
 New tables are created encrypted and keyring encryption is enforced.
@@ -375,7 +570,7 @@ New tables are created encrypted and keyring encryption is enforced.
 
 :Availability: This value is **Alpha** quality
 
-All tables created or altered without the ``ENCRYPTION=NO`` clause 
+All tables created or altered without the ``ENCRYPTION=NO`` clause
 are encrypted with the latest version of the default encryption key. If a table
 being altered is already encrypted with the master key, the table is recreated
 encrypted with the latest version of the default encryption key.
@@ -425,7 +620,7 @@ re-encrypted on each key rotation. If it is set to **2**, the table is encrypted
 on every other key rotation.
 
 Binary log encryption
-=====================
+
 
 As described in the |MySQL| documentation, the encryption of binary and relay
 logs is triggered by the `binlog_encryption
@@ -451,8 +646,8 @@ Dumping of encrypted binary logs involves decryption, and can be done using
 
 .. |changed-version| replace:: 5.7.20-19
 
-System Variables
-----------------
+.. rubric:: System Variables
+
 
 .. variable:: encrypt_binlog
 
@@ -467,8 +662,8 @@ The variable turns on binary and relay logs encryption.
 
 
 
-Temporary file encryption
-================================================================================
+.. rubric:: Temporary file encryption
+
 
 :Availability: This feature is of **Beta** quality.
 
@@ -485,8 +680,8 @@ purposes:
 For each temporary file, an encryption key is generated locally, only kept
 in memory for the lifetime of the temporary file, and discarded afterwards.
 
-System Variables
-----------------
+.. rubric:: System Variables
+
 
 .. variable:: encrypt-tmp-files
 
@@ -500,165 +695,8 @@ The option turns on encryption of temporary files created by |Percona Server|.
 
 .. _data-at-rest-encryption.key-rotation:
 
-Key Rotation
-================================================================================
+.. rubric:: Data Scrubbing
 
-The keyring management is enabled for each tablespace separately when you set
-the encryption in the ``ENCRYPTION`` clause, to `KEYRING` in the supported SQL
-statement:
-
-- CREATE TABLE .. ENCRYPTION='KEYRING`
-- ALTER TABLE ... ENCRYPTION='KEYRING'
-- CREATE TABLESPACE tablespace_name … ENCRYPTION=’KEYRING’
-
-.. note::
-
-   Running ``ALTER TABLE .. ENCRYPTION=’Y’`` on the tablespace created with
-   ``ENCRYPTION=’KEYRING’`` converts the table back to the existing MySQL
-   scheme.
-
-.. _keyring_vault_plugin:
-
-Keyring Vault plugin
-====================
-
-The ``keyring_vault`` plugin can be used to store the encryption keys inside the
-`Hashicorp Vault server <https://www.vaultproject.io>`_.
-
-.. important::
-
-   ``keyring_vault`` plugin only works with kv secrets engine version 1.
-
-   .. seealso::
-
-      HashiCorp Documentation: More information about ``kv`` secrets engine
-         https://www.vaultproject.io/docs/secrets/kv/kv-v1.html
-
-Installation
-------------
-
-The safest way to load the plugin is to do it on the server startup by
-using `--early-plugin-load variable
-<https://dev.mysql.com/doc/refman/8.0/en/server-options.html#option_mysqld_early-plugin-load>`_
-option:
-
-.. code-block:: bash
-
-  --early-plugin-load="keyring_vault=keyring_vault.so" \
-  --loose-keyring_vault_config="/home/mysql/keyring_vault.conf"
-
-It should be loaded this way to be able to facilitate recovery for encrypted
-tables.
-
-.. warning::
-
-  If server should be started with several plugins loaded early,
-  ``--early-plugin-load`` should contain their list separated by semicolons. Also
-  it's a good practice to put this list in double quotes so that semicolons
-  do not create problems when executed in a script.
-
-Apart from installing the plugin you also need to set the
-:variable:`keyring_vault_config` variable. This variable should point to the
-keyring_vault configuration file, whose contents are discussed below.
-
-This plugin supports the SQL interface for keyring key management described in
-`General-Purpose Keyring Key-Management Functions
-<https://dev.mysql.com/doc/refman/8.0/en/keyring-udfs-general-purpose.html>`_
-manual.
-
-To enable the functions you'll need to install the ``keyring_udf`` plugin:
-
-.. code-block:: mysql
-
-  mysql> INSTALL PLUGIN keyring_udf SONAME 'keyring_udf.so';
-
-Usage
---------------------------------------------------------------------------------
-
-On plugin initialization ``keyring_vault`` connects to the Vault server using
-credentials stored in the credentials file. Location of this file is specified
-in by :variable:`keyring_vault_config`. On successful initialization it
-retrieves keys signatures and stores them inside an in-memory hash map.
-
-Configuration file should contain the following information:
-
-* ``vault_url`` - the address of the server where Vault is running. It can be a
-  named address, like one in the following example, or just an IP address. The
-  important part is that it should begin with ``https://``.
-
-* ``secret_mount_point`` - the name of the mount point where ``keyring_vault``
-  will store keys.
-
-* ``token`` - a token generated by the Vault server, which ``keyring_vault``
-  will further use when connecting to the Vault. At minimum, this token should
-  be allowed to store new keys in a secret mount point (when ``keyring_vault``
-  is used only for transparent data encryption, and not for ``keyring_udf``
-  plugin). If ``keyring_udf`` plugin is combined with ``keyring_vault``, this
-  token should be also allowed to remove keys from the Vault (for the
-  ``keyring_key_remove`` operation supported by the ``keyring_udf`` plugin).
-
-* ``vault_ca [optional]`` - this variable needs to be specified only when the
-  Vault's CA certificate is not trusted by the machine that is going to connect
-  to the Vault server. In this case this variable should point to CA
-  certificate that was used to sign Vault's certificates.
-
-.. warning::
-   
-   Each ``secret_mount_point`` should be used by only one server - otherwise
-   mixing encryption keys from different servers may lead to undefined
-   behavior.
-  
-An example of the configuration file looks like this: ::
-
-  vault_url = https://vault.public.com:8202
-  secret_mount_point = secret
-  token = 58a20c08-8001-fd5f-5192-7498a48eaf20
-  vault_ca = /data/keyring_vault_confs/vault_ca.crt
-
-When a key is fetched from a ``keyring`` for the first time the
-``keyring_vault`` communicates with the Vault server, and retrieves the key
-type and data. Next it queries the Vault server for the key type and data and
-caches it locally.
-
-Key deletion will permanently delete key from the in-memory hash map and the
-Vault server.
-
-.. note::
-
-  |Percona XtraBackup| currently doesn't support backup of tables encrypted
-  with :ref:`keyring_vault_plugin`.
-
-System Variables
-----------------
-
-.. variable:: keyring_vault_config
-
-  :cli: ``--keyring-vault-config``
-  :dyn: Yes
-  :scope: Global
-  :vartype: Text
-  :default:
-
-This variable is used to define the location of the
-:ref:`keyring_vault_plugin` configuration file.
-
-.. variable:: keyring_vault_timeout
-
-  :cli: ``--keyring-vault-timeout``
-  :dyn: Yes
-  :scope: Global
-  :vartype: Numeric
-  :default: ``15``
-
-This variable allows to set the duration in seconds for the Vault server
-connection timeout. Default value is ``15``. Allowed range is from ``1``
-second to ``86400`` seconds (24 hours). The timeout can be also completely
-disabled to wait infinite amount of time by setting this variable to ``0``.
-
-.. _data-at-rest-encryption.data-scrubbing:
-
-Data Scrubbing
-================================================================================
 
 :Availability: This feature is **Alpha** quality
 
@@ -683,8 +721,8 @@ Note that data scrubbing is made effective by setting the
 :variable:`innodb_online_encryption_threads` variable to a value greater than
 **zero**.
 
-System Variables
---------------------------------------------------------------------------------
+.. rubric:: System Variables
+
 
 .. variable:: innodb_background_scrub_data_compressed
 
