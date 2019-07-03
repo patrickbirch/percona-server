@@ -141,7 +141,7 @@ be encrypted unless you use the ``ENCRYPTION`` clause explicitly.
 
 .. rubric:: KEYRING_ON
 
-:Availability: This value is **Alpha** quality
+:Availability: This value is **Experimental** quality
 
 New tables are created encrypted with the keyring as the default encryption. You
 may specify a numeric key identifier and use a specific ``percona-innodb-`` key
@@ -164,13 +164,13 @@ keyring, |Percona Server| will create it with version 1. If a new
 
 .. rubric:: FORCE_KEYRING
 
-:Availability: This value is **Alpha** quality
+:Availability: This value is **Experimental** quality
 
 New tables are created encrypted and keyring encryption is enforced.
 
 .. rubric:: ONLINE_TO_KEYRING
 
-:Availability: This value is **Alpha** quality
+:Availability: This value is **Experimental** quality
 
 All tables created or altered without the ``ENCRYPTION=NO`` clause
 are encrypted with the latest version of the default encryption key. If a table
@@ -179,7 +179,7 @@ encrypted with the latest version of the default encryption key.
 
 .. rubric:: ONLINE_TO_KEYRING_FORCE
 
-:Availability: This value is **Alpha** quality
+:Availability: This value is **Experimental** quality
 
 It is only possible to apply the keyring encryption when creating or altering
 tables.
@@ -241,8 +241,7 @@ tables.
 .. warning::
 
   If server should be started with several plugins loaded early,
-  ``--early-plugin-load`` should contain their list separated by semicolons. Also
-  it's a good practice to put this list in double quotes so that semicolons
+  ``--early-plugin-load`` should contain their list separated by semicolons. Also it's a good practice to put this list in double quotes so that semicolons
   do not create problems when executed in a script.
 
 Apart from installing the plugin you also need to set the
@@ -327,8 +326,7 @@ System Variables
   :vartype: Text
   :default:
 
-This variable is used to define the location of the
-:ref:`keyring_vault_plugin` configuration file.
+This variable is used to define the location of the :ref:`keyring_vault_plugin` configuration file.
 
 .. variable:: keyring_vault_timeout
 
