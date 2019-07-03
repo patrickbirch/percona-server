@@ -46,7 +46,7 @@ The compression can be specified:
 
 * when creating a table:
   ``CREATE TABLE ... (..., foo BLOB COLUMN_FORMAT COMPRESSED, ...);``
-  
+
 * when altering a table and modifying a column to the compressed format:
   ``ALTER TABLE ... MODIFY [COLUMN] ... COLUMN_FORMAT COMPRESSED``, or
   ``ALTER TABLE ... CHANGE [COLUMN] ... COLUMN_FORMAT COMPRESSED``.
@@ -84,8 +84,7 @@ Compression dictionaries can be represented as a list of words in the form of a
 string (comma or any other character can be used as a delimiter although not
 required). In other words, ``a,bb,ccc``, ``a bb ccc`` and ``abbccc`` will have
 the same effect. However, the latter is more compact. Quote symbol
-quoting is handled by regular SQL quoting. The maximum supported dictionary length
-is 32506 bytes (``zlib`` limitation).
+quoting is handled by regular SQL quoting. The maximum supported dictionary length is 32506 bytes (``zlib`` limitation).
 
 The compression dictionary is stored in a new system |InnoDB| table.  As this
 table is of the data dictionary kind, concurrent reads are allowed, but writes
@@ -100,7 +99,7 @@ exception when :variable:`innodb_force_value` is set to ``3``: with values
 less than ``3``, compression dictionary operations are allowed, and with
 values >= ``3``, they are forbidden.
 
-.. note:: 
+.. note::
 
   Prior to |Percona Server| :rn:`8.0.15-6` using Compression dictionary operations
   with :variable:`innodb_force_recovery` variable set to value > 0 would result in
@@ -311,7 +310,7 @@ compression for values that are known in advance by the user to have bad
 compression ratio of their first N bytes.
 
 .. seealso::
-   
+
    How to find a good/optimal dictionary for zlib 'setDictionary' when processing a given set of data?
       http://stackoverflow.com/questions/2011653/how-to-find-a-good-optimal-dictionary-for-zlib-setdictionary-when-processing-a
 

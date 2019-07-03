@@ -121,15 +121,15 @@ Security Improvements
   :maxdepth: 1
   :glob:
 
-  security/pam_plugin.rst
-  security/data_at_rest_encryption.rest
-  security/keyring_vault_encryption.rst
-  security/binary_log_encryption.rst
-  security/innodb_encryption.rst
-  security/temporary_tablespace.rst
+  security/pam_plugin
+  security/data_at_rest_encryption
+  security/keyring_vault_plugin
+  security/binary_log_encryption
+  security/innodb_encryption
+  security/temporary_tablespace
   security/system_key_rotation
-  security/data_scrubbing.rst
-  security/ssl-improvement.rst
+  security/data_scrubbing
+  security/ssl-improvement
 
 
 

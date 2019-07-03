@@ -1,4 +1,4 @@
-.. _binary_log_encryption
+.. _binary_log_encryption:
 
 ==============================================================================
 Binary Log Encryption

@@ -1,4 +1,4 @@
-.. _temporary_tablespace
+.. _temporary_tablespace:
 
 ==============================================================================
 Temporary Tablespace
@@ -55,14 +55,16 @@ FR09. If server started with --innodb_temp_tablespace_encrypt=OFF, changing the 
 
 FR10. Changing the --innodb_temp_tablespace_encrypt=ON/OFF, will have no changes on the already exisiting data in both file-per-table or system temporary tablespace
 
-.. rubric:: How to Encrypt a file-per-table temporary table
+.. rubric:: Encrypting a file-per-table temporary table
 
-You start the server with the innodb-temp-tablespace-encrypt=ON.
+Set the innodb-temp-tablespace-encrypt=ON option and then start the server.
 
-..code-block:: mysql
+Create a temporary table with the following command:
+
+.. code-block:: mysql
 
 CREATE TEMPORARY TABLE t1(a int) ROW_FORMAT=COMPRESSED ENCRYPTION='Y';
 
 .. note::
 
-  If the server is started with innodb-encrypt-tables=ON the temporary table is automatically created with the  ENCRYPTION='Y' option. 
+  If the server is started with innodb-encrypt-tables=ON the temporary table is automatically created with the  ENCRYPTION='Y' option. The inclusion of the option in the example is for completeness.

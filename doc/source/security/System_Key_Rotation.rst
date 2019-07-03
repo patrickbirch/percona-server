@@ -1,6 +1,6 @@
-.. _key_rotation
+.. _system_key_rotation:
 
-==============================================================================
+==============================================================
 System Key Rotation
 ==============================================================
 
@@ -16,7 +16,7 @@ From PS 5.7 and >= 8.0.14
 
 * percona_innodb
 
-Keys versioning
+Key versioning
 
 Appends the version to the key_id in keyring
 
