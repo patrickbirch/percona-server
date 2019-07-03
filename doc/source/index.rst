@@ -108,14 +108,30 @@ Management Improvements
    management/udf_percona_toolkit
    management/kill_idle_trx
    management/changed_page_tracking
-   management/pam_plugin
    management/innodb_expanded_fast_index_creation
    management/backup_locks
    management/audit_log_plugin
    management/start_transaction_with_consistent_snapshot
    management/extended_show_grants
-   management/data_at_rest_encryption
-   management/ssl-improvement
+
+Security Improvements
+================================================================================
+
+.. toctree::
+  :maxdepth: 1
+  :glob:
+
+  security/pam_plugin.rst
+  security/data_at_rest_encryption.rest
+  security/keyring_vault_encryption.rst
+  security/binary_log_encryption.rst
+  security/innodb_encryption.rst
+  security/temporary_tablespace.rst
+  security/system_key_rotation
+  security/data_scrubbing.rst
+  security/ssl-improvement.rst
+
+
 
 Diagnostics Improvements
 ================================================================================
@@ -190,5 +206,3 @@ Reference
 
 * :ref:`genindex`
 * :ref:`modindex`
-
-

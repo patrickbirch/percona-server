@@ -15,7 +15,7 @@ Here are some of the benefits that Percona dialog plugin offers over the default
   * Dialog client `installation bug <http://bugs.mysql.com/bug.php?id=60745>`_ has been fixed.
   * This plugin works on |MySQL| and |Percona Server|.
 
-Percona offers two versions of this plugin:  
+Percona offers two versions of this plugin:
 
   * Full PAM plugin called *auth_pam*. This plugin uses *dialog.so*. It fully supports the PAM protocol with arbitrary communication between client and server.
   * Oracle-compatible PAM called *auth_pam_compat*. This plugin uses *mysql_clear_password* which is a part of Oracle MySQL client. It also has some limitations, such as, it supports only one password input. You must use ``-p`` option in order to pass the password to *auth_pam_compat*.
@@ -25,11 +25,11 @@ These two versions of plugins are physically different. To choose which one you 
 Installation
 ============
 
-This plugin requires manual installation because it isn't installed by default. :: 
+This plugin requires manual installation because it isn't installed by default. ::
 
  mysql> INSTALL PLUGIN auth_pam SONAME 'auth_pam.so';
- 
-After the plugin has been installed it should be present in the plugins list. To check if the plugin has been correctly installed and active :: 
+
+After the plugin has been installed it should be present in the plugins list. To check if the plugin has been correctly installed and active ::
 
  mysql> SHOW PLUGINS;
  ...
@@ -41,7 +41,7 @@ Configuration
 
 In order to use the plugin, authentication method should be configured. Simple setup can be to use the standard UNIX authentication method (``pam_unix``).
 
-.. note:: 
+.. note::
 
   To use ``pam_unix``, mysql will need to be added to the shadow group in order to have enough privileges to read the /etc/shadow.
 
@@ -59,7 +59,7 @@ For added information in the system log, you can expand it to be: ::
 Creating a user
 ================
 
-After the PAM plugin has been configured, users can be created with the PAM plugin as authentication method :: 
+After the PAM plugin has been configured, users can be created with the PAM plugin as authentication method ::
 
   mysql> CREATE USER 'newuser'@'localhost' IDENTIFIED WITH auth_pam;
 
@@ -70,7 +70,7 @@ Supplementary groups support
 
 |Percona Server| has implemented PAM plugin support for supplementary groups. Supplementary or secondary groups are extra groups a specific user is member of. For example user ``joe`` might be a member of groups: ``joe`` (his primary group) and secondary groups ``developers`` and ``dba``. A complete list of groups and users belonging to them can be checked with ``cat /etc/group`` command.
 
-This feature enables using secondary groups in the mapping part of the authentication string, like "``mysql, developers=joe, dba=mark``". Previously only primary groups could have been specified there. If user is a member of both ``developers`` and ``dba``, PAM plugin will map it to the ``joe`` because ``developers`` matches first. 
+This feature enables using secondary groups in the mapping part of the authentication string, like "``mysql, developers=joe, dba=mark``". Previously only primary groups could have been specified there. If user is a member of both ``developers`` and ``dba``, PAM plugin will map it to the ``joe`` because ``developers`` matches first.
 
 Known issues
 ============
@@ -83,7 +83,7 @@ PAM authentication can fail with ``mysqld: pam_unix(mysqld:account): Fork failed
 
    echo 1 > /proc/sys/vm/overcommit_memory
 
-and by adding the ``vm.overcommit_memory = 1`` to :file:`/etc/sysctl.conf` to make the change permanent after reboot. Authentication of internal (i.e. non PAM) accounts continues to work fine when ``mysqld`` reaches this memory utilization level. *NOTE:* Setting the ``vm.overcommit_memory`` to ``1`` will cause kernel to perform no memory overcommit handling which could increase the potential for memory overload and invoking of OOM killer. 
+and by adding the ``vm.overcommit_memory = 1`` to :file:`/etc/sysctl.conf` to make the change permanent after reboot. Authentication of internal (i.e. non PAM) accounts continues to work fine when ``mysqld`` reaches this memory utilization level. *NOTE:* Setting the ``vm.overcommit_memory`` to ``1`` will cause kernel to perform no memory overcommit handling which could increase the potential for memory overload and invoking of OOM killer.
 
 Version Specific Information
 ============================
