@@ -10,15 +10,15 @@ Percona PAM Authentication Plugin is a free and Open Source implementation of th
 
 Here are some of the benefits that Percona dialog plugin offers over the default one:
 
-  * It correctly recognizes whether PAM wants input to be echoed or not, while the default one always echoes the input on the user's console.
-  * It can use the password which is passed to |MySQL| client via "-p" parameter.
+  * the plugin correctly recognizes whether PAM wants input to be echoed or not, while the default one always echoes the input on the user's console.
+  * the plugin can use the password which is passed to |MySQL| client via "-p" parameter.
   * Dialog client `installation bug <http://bugs.mysql.com/bug.php?id=60745>`_ has been fixed.
   * This plugin works on |MySQL| and |Percona Server|.
 
 Percona offers two versions of this plugin:
 
   * Full PAM plugin called *auth_pam*. This plugin uses *dialog.so*. It fully supports the PAM protocol with arbitrary communication between client and server.
-  * Oracle-compatible PAM called *auth_pam_compat*. This plugin uses *mysql_clear_password* which is a part of Oracle MySQL client. It also has some limitations, such as, it supports only one password input. You must use ``-p`` option in order to pass the password to *auth_pam_compat*.
+  * Oracle-compatible PAM called *auth_pam_compat*. This plugin uses *mysql_clear_password* which is a part of Oracle MySQL client. The plugin  has some limitations, such as, the plugin supports only one password input. You must use ``-p`` option in order to pass the password to *auth_pam_compat*.
 
 These two versions of plugins are physically different. To choose which one you want used, you must use *IDENTIFIED WITH 'auth_pam'* for auth_pam, and *IDENTIFIED WITH 'auth_pam_compat'* for auth_pam_compat.
 
@@ -29,7 +29,7 @@ This plugin requires manual installation because it isn't installed by default. 
 
  mysql> INSTALL PLUGIN auth_pam SONAME 'auth_pam.so';
 
-After the plugin has been installed it should be present in the plugins list. To check if the plugin has been correctly installed and active ::
+After the plugin has been installed, the plugin should be available in the plugins list. To check if the plugin has been correctly installed and active ::
 
  mysql> SHOW PLUGINS;
  ...
@@ -43,7 +43,7 @@ In order to use the plugin, authentication method should be configured. Simple s
 
 .. note::
 
-  To use ``pam_unix``, mysql will need to be added to the shadow group in order to have enough privileges to read the /etc/shadow.
+  To use ``pam_unix``, mysql must be added to the shadow group in order to have enough privileges to read the /etc/shadow.
 
 A sample `/etc/pam.d/mysqld` file: ::
 

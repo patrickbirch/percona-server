@@ -1,13 +1,10 @@
 .. _temporary_tablespace:
 
 ==============================================================================
-Temporary Tablespace
+Encrypting Temporary Tablespace Files
 ==============================================================================
 
-Temporary file encryption
-================================================================================
-
-:Availability: This feature is of **experimental** quality.
+:Availability: This feature is of **Experimental** quality.
 
 The encryption of temporary files is triggered by the
 :variable:`encrypt-tmp-files` option.

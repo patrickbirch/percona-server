@@ -197,9 +197,10 @@ Core dumps - could contain sensitive information like tablespace encryption keys
 
 No mitigation for leaked tablespace keys.
 
-Tablespace keys comes directly from the keyring. Set `innodb_default_ENCRYPTION_KEY_ID=0`
 
 Encryption threads
+
+
 
 Background threads
 

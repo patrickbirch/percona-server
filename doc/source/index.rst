@@ -123,13 +123,15 @@ Security Improvements
 
   security/pam_plugin
   security/data_at_rest_encryption
-  security/keyring_vault_plugin
-  security/binary_log_encryption
+  security/managing_keyrings
   security/innodb_encryption
+  security/encrypting_single_table
   security/temporary_tablespace
-  security/system_key_rotation
+  security/binary_log_encryption
   security/data_scrubbing
   security/ssl-improvement
+  security/keyring_vault_plugin
+  security/system_key_rotation
 
 
 

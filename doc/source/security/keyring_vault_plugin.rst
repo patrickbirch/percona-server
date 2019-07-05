@@ -5,43 +5,14 @@ Keyring Vault Plugin
 ==============================================================================
 
 
-Requirements
+Keyring Plugin
 ================================================================================
-
-Data at rest encryption requires that a keyring plugin, such as `keyring_file
-<https://dev.mysql.com/doc/refman/8.0/en/keyring-file-plugin.html>`_ or
-:ref:`keyring_vault_plugin` be installed and already loaded. To load the
-``keyring`` plugin when starting the server, use the ``--early-plugin-load``
-option:
-
-.. code-block:: bash
-
-   $ mysqld --early-plugin-load="keyring_file=keyring_file.so"
-
-Alternatively, you can add this option to your configuration file:
-
-.. code-block:: guess
-
-   [mysqld]
-   early-plugin-load=keyring_file.so
-
-.. warning::
-
-   Only one keyring plugin should be enabled at a time. Enabling multiple
-   keyring plugins is not supported and may result in data loss.
-
-.. seealso::
-
-   |MySQL| Documentation:
-      - `Installing a Keyring Plugin <https://dev.mysql.com/doc/refman/8.0/en/keyring-installation.html>`_
-      - `The --early-plugin-load Option <https://dev.mysql.com/doc/refman/8.0/en/server-options.html#option_mysqld_early-plugin-load>`_
 
 
 Changing the Default Keyring Encryption
 ================================================================================
 
-When encryption is enabled and the server is configured to use the KEYRING
-encryption, new tables use the default encryption key.
+When encryption is enabled and the server is configured to use the KEYRING encryption, new tables use the default encryption key.
 
 You many change this default encryption via the
 :variable:`innodb_default_encryption_key_id` variable.
@@ -79,34 +50,11 @@ Here, **NEW_ID** is an unsigned 32-bit integer.
 Using Key Rotation
 ================================================================================
 
-The keyring management is enabled for each tablespace separately when you set
-the encryption in the ``ENCRYPTION`` clause, to `KEYRING` in the supported SQL
-statement:
 
-- CREATE TABLE .. ENCRYPTION='KEYRING`
-- ALTER TABLE ... ENCRYPTION='KEYRING'
-- CREATE TABLESPACE tablespace_name … ENCRYPTION=’KEYRING’
-
-.. note::
-
-   Running ``ALTER TABLE .. ENCRYPTION=’Y’`` on the tablespace created with
-   ``ENCRYPTION=’KEYRING’`` converts the table back to the existing MySQL
-   scheme.
 
 Using the Keyring Vault plugin
 ==============================
 
-The ``keyring_vault`` plugin can be used to store the encryption keys inside the
-`Hashicorp Vault server <https://www.vaultproject.io>`_.
-
-.. important::
-
-   ``keyring_vault`` plugin only works with kv secrets engine version 1 (**shouldn't this be 2?**)
-
-   .. seealso::
-
-      HashiCorp Documentation: More information about ``kv`` secrets engine
-         https://www.vaultproject.io/docs/secrets/kv/kv-v1.html
 
 
 
