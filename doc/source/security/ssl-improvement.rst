@@ -1,4 +1,4 @@
-.. _percona-server.management.ssl:
+.. _percona-server.security.ssl:
 
 ================================================================================
 SSL Improvements
@@ -7,7 +7,7 @@ SSL Improvements
 By default, |Percona Server| passes elliptic curve crypto-based
 ciphers to OpenSSL, such as ECDHE-RSA-AES128-GCM-SHA256.
 
-.. note:: 
+.. note::
 
    Although documented as supported, elliptic curve crypto-based ciphers do not work with |MySQL|.
 

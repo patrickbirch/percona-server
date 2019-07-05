@@ -1,7 +1,7 @@
-_keyring_management
+.. _managing_keyrings
 
 ================================================================================
-Managing the Keyring
+Managing Keyrings
 ================================================================================
 
 Data at rest encryption requires a keyring plugin to be installed, configured, and loaded. A keyring stores known keys. The following are the keyring plugin options:

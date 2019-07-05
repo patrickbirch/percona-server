@@ -1,4 +1,4 @@
-_Single_table_encryption
+.. _encrypting_single_table
 
 ================================================================================
 Encrypting a Single Table
