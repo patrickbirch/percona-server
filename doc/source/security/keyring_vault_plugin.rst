@@ -1,61 +1,8 @@
 .. _keyring_vault_plugin:
 
-==============================================================================
+============================================================
 Keyring Vault Plugin
-==============================================================================
-
-
-Keyring Plugin
-================================================================================
-
-
-Changing the Default Keyring Encryption
-================================================================================
-
-When encryption is enabled and the server is configured to use the KEYRING encryption, new tables use the default encryption key.
-
-You many change this default encryption via the
-:variable:`innodb_default_encryption_key_id` variable.
-
-.. seealso::
-
-   Configuring the way how tables are encrypted
-      :variable:`innodb_encrypt_tables`
-
-System Variables
---------------------------------------------------------------------------------
-
-.. variable:: innodb_default_encryption_key_id
-
-   :cli: ``--innodb-default-encryption-key-id``
-   :dyn: Yes
-   :scope: Session
-   :vartype: Numeric
-   :default: 0
-
-The ID of the default encryption key. By default, this variable contains **0**
-to encrypt new tables with the latest version of the key ``percona_innodb-0``.
-
-To change the default value use the following syntax:
-
-.. code-block:: guess
-
-   mysql> SET innodb_default_encryption_key_id = NEW_ID
-
-Here, **NEW_ID** is an unsigned 32-bit integer.
-
-
-.. _data-at-rest-encryption.key-rotation:
-
-Using Key Rotation
-================================================================================
-
-
-
-Using the Keyring Vault plugin
-==============================
-
-
+============================================================
 
 
 Notes to keyrings
@@ -121,24 +68,3 @@ Set of UDFS include the following:
 * keyring_key_remove
 
 Keys do not contain the server's UUID
-
-..rubric:: Master Key Rotation
-
-The Master Key rotation improves security, in case the Master Key is lost, or an unauthorized user has received it. The rotation also improves the speed of the InnoDB startup, when you have restored tables from different backups.
-
-The keyring generates a new master key. For each table, re-encrypts the tablespace key and IV with the new master key and then updates the encryption information in the tablespace header.
-
-The changes in the tablespace header are as follows:
-
-* New Key ID
-* New server UUID
-* Tablespace key re-Encrypted
-* CRC32 re-calculated
-
-Keyring is in cache memory. If you have a core dump, that dump could contain sensitve information, such as the tablespace encryption keys and the Master Key.
-
-For this information to be generated for a core dump, you must have the scope option core-file enabled. If the core file option is not enabled, the keyring information is not avaiable. If you do need the core-file enabled, you should generate the core dump in an encrypted place and use core_pattern.
-
-.. Note::
-
-  There is no mitigation for leaked tablespace keys. If a third-party application accesses the tablespace key, the Master Key rotation will not change that.
