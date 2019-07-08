@@ -52,68 +52,6 @@ number 13 set if tablespace is encrypted. This bit can be ckecked with
       +-------+-----------+-------+-----------+
       4 rows in set (0.01 sec)
 
-System Variables
-----------------
-
-.. variable:: innodb_temp_tablespace_encrypt
-
-  :cli: ``--innodb-temp-tablespace-encrypt``
-  :dyn: Yes
-  :scope: Global
-  :vartype: Boolean
-  :default: ``Off``
-
-When this option is set to ``ON``, the server encrypts the global temporary
-tablespace (:file:`ibtmp*` files) and the session temporary tablespaces
-(:file:`#innodb_temp/temp_*.ibt` files). This option does not enforce the
-encryption of temporary tables which are currently open, and it does not rebuild
-the system temporary tablespace to encrypt data which are already written.
-
-The ``ENCRYPTION`` option is not allowed in the ``CREATE TEMPORARY TABLE``
-statement. The ``TABLESPACE`` option cannot be set to `innodb_temporary`. The
-global temporary tablespace datafile ``ibtmp1`` holds temporary table undo logs
-while intrinsic temporary tables and user temporary tables go to the encrypted
-session temporary tablespace.
-
-Since the global temporary tablespaces are created fresh at each server startup,
-it will not contain unencrypted data if this option is specified as a server
-argument.
-
-Setting :variable:`innodb_temp_tablespace_encrypt` to ``OFF`` with
-:variable:`innodb_encrypt_tables` set to ``OFF`` at runtime makes the server
-create new temporary tablespaces unencrypted. Intrinsic tables to go unencrypted
-session temporary tablespaces. Existing encrypted user temporary and intrinsic
-temporary tables remain in encrypted session temporary tablespaces and are only
-destroyed when the session is disconnected.
-
-When :variable:`innodb_temp_tablespace_encrypt` is ``OFF`` while
-:variable:`innodb_encrypt_tables` is ``ON`` at startup, the temporary tablespace
-datafile ``ibtmp1``, which only contains undo logs, is not encrypted. However,
-user-created and intrinsic temporary tables go to the encrypted session
-temporary tablespace.
-
-This feature is considered **BETA** quality.
-
-.. important::
-
-   To use this option, a keyring plugin must be loaded, otherwise the server
-   produces an error message and refuses to create new temporary tables.
-
-.. seealso::
-
-   |MySQL| Documentation
-      https://dev.mysql.com/doc/refman/8.0/en/create-temporary-table.html
-
-.. variable:: innodb_encrypt_tables
-
-  :cli: ``--innodb-encrypt-tables``
-  :dyn: Yes
-  :scope: Global
-  :vartype: Text
-  :default: ``OFF``
-
-The implementation of the behavior controlled by this variable is considered
-**BETA** quality.
 
 This variable was ported from MariaDB and then extended to support key rotation. This
 variable has the following possible values:
