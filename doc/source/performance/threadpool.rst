@@ -4,9 +4,14 @@
  Thread Pool
 =============
 
-|MySQL| executes statements using one thread per client connection. Once the number of connections increases past a certain point performance will degrade. 
+|MySQL| executes statements using one thread per client connection. Once the 
+number of connections increases past a certain point performance will degrade.
 
-This feature enables the server to keep the top performance even with a large number of client connections by introducing a dynamic thread pool. By using the thread pool server would decrease the number of threads, which will then reduce the context switching and hot locks contentions. Using the thread pool will have the most effect with ``OLTP`` workloads (relatively short CPU-bound queries). 
+This feature enables the server to keep the top performance even with a large 
+number of client connections by introducing a dynamic thread pool. By using the 
+thread pool server would decrease the number of threads, which will then reduce 
+the context switching and hot locks contentions. Using the thread pool will have 
+the most effect with ``OLTP`` workloads (relatively short CPU-bound queries).
 
 In order to enable the thread pool variable :variable:`thread_handling` should be set up to ``pool-of-threads`` value. This can be done by adding: ::
 
@@ -154,8 +159,23 @@ This variable can be used to define the number of threads that can use the CPU a
 
 The number of milliseconds before a running thread is considered stalled. When this limit is reached thread pool will wake up or create another thread. This is being used to prevent a long-running query from monopolizing the pool.
 
+.. rubric:: Upgrading from Percona Server for MySQL 8.0.14 to any higher version
+
+Starting from release `8.0.14`, |Percona Server| uses the upstream 
+implementation of the admin_port. The variable ``extra_port`` and the related 
+variable ``extra_max_connections`` are removed and not supported. It is 
+important to remove the ``extra_port`` and ``extra_max_connections`` variables 
+from your configuration file before you attempt to upgrade from another release 
+in the |Percona Server| series. Otherwise, the server boot error will report the 
+unknown variables, and the server will refuse to start.
+
+.. seealso::
+    |MySQL| Documentation:
+        - `<https://dev.mysql.com/doc/refman/8.0/en/server-system-variables.html#sysvar_admin_port>`_
+
 .. variable:: extra_port
       
+     :version_info: removed in `8.0.14`
      :cli: Yes
      :conf: Yes
      :scope: Global
@@ -169,9 +189,9 @@ This variable can be used to specify additional port |Percona Server| will liste
 
   mysql --port='extra-port-number' --protocol=tcp
 
-
 .. variable:: extra_max_connections
       
+     :version_info: removed in `8.0.14`
      :cli: Yes
      :conf: Yes
      :scope: Global
