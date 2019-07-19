@@ -49,6 +49,7 @@ New Features
   commit time write batch into the database,
   and :variable:`rocksdb_write_policy` specifying when two-phase commit data are
   actually written into the database.
+
 	
 Bugs Fixed
 ==========
@@ -81,6 +82,7 @@ Bugs Fixed
   :psbug:`3702`.
 * Setting the global variable :variable:`version_suffix` to NULL could
   lead to a server crash. Bug fixed :psbug:`4785`.
+* The RocksDB server immediately aborts when a background thread encounters an error. Bug fixed :psbug:`4706`.
 
 Other Bugs Fixed
 ================
