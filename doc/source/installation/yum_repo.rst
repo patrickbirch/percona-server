@@ -18,10 +18,11 @@ Supported Releases:
 
 - *CentOS* 6 and *RHEL* 6 (Current Stable)
 - *CentOS* 7 and *RHEL* 7
+- *RHEL* 8 - implemented version: 8.0.16-7
 - *Amazon Linux AMI* (works the same as *CentOS* 6)
 - *Amazon Linux* 2
 
-.. important::
+ * *Amazon Linux AMI* (works the same as *CentOS* 6)
 
    "Current Stable": We support only the current stable RHEL6/CentOS6 release,
    because there is no official (i.e. RedHat provided) method to support or
@@ -114,13 +115,12 @@ lease add sudo to percona-release setup and yum install commands
 
 1. Install the Percona repository 
    
-   You can install Percona yum repository by running the following command as a ``root`` user or with sudo:
-
-   .. code-block:: bash
+   You can install Percona yum repository by running the following command as a 
+	``root`` user or with sudo:i   .. code-block:: bash
         
       $ sudo yum install https://repo.percona.com/yum/percona-release-latest.noarch.rpm
 
-   You should see some output such as the following: 
+   You should see an output like the following: 
 
    .. code-block:: bash
 
@@ -132,7 +132,25 @@ lease add sudo to percona-release setup and yum install commands
 
    .. code-block:: bash
 
+
       $ sudo percona-release setup ps80
+
+     Percona-Server-57-debuginfo.x86_64      5.7.10-3.1.el7                 @percona-release-x86_64
+     Percona-Server-client-57.x86_64         5.7.10-3.1.el7                 @percona-release-x86_64
+     Percona-Server-devel-57.x86_64          5.7.10-3.1.el7                 @percona-release-x86_64
+     Percona-Server-server-57.x86_64         5.7.10-3.1.el7                 @percona-release-x86_64
+     Percona-Server-shared-57.x86_64         5.7.10-3.1.el7                 @percona-release-x86_64
+     Percona-Server-shared-compat-57.x86_64  5.7.10-3.1.el7                 @percona-release-x86_64
+     Percona-Server-test-57.x86_64           5.7.10-3.1.el7                 @percona-release-x86_64
+     Percona-Server-tokudb-57.x86_64         5.7.10-3.1.el7                 @percona-release-x86_64
+     ...
+     .. note::
+
+     For an RHEL 8 package installation, the mysql module must be disabled.
+
+     .. code-block:: bash
+     
+		       sudo dnf module disable mysql
 
 #. Install the packages
 
