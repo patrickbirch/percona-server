@@ -118,6 +118,27 @@ Management Improvements
    management/ssl-improvement
    management/utility_user
 
+Security Improvements
+================================================================================
+
+.. toctree::
+  :maxdepth: 1
+  :glob:
+
+  security/pam_plugin
+  security/data_at_rest_encryption
+  security/encrypting-vault
+  security/keyring
+  security/installing-keyring
+  security/rotating-master-key
+  security/innodb-encryption
+  security/encrypting-tables
+  security/encrypting-tablespaces
+  security/binary-log-encryption
+  security/encrypting-binlogs
+  security/data-scrubbing
+  security/ssl-improvement
+  security/data-masking
 
 Diagnostics Improvements
 ================================================================================
@@ -192,5 +213,3 @@ Reference
 
 * :ref:`genindex`
 * :ref:`modindex`
-
-
