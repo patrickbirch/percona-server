@@ -1,10 +1,10 @@
 .. _using-keyring-plugin:
 
 =======================================================
-Using the Keyring Plugin
+Working with the Keyring Plugins
 =======================================================
 
-|Percona Server| may use the following plugins:
+To enable encryption, |Percona Server| may use one of the following plugins:
 
 *  `keyring_file` stores the keyring data locally
 
@@ -15,36 +15,44 @@ Using the Keyring Plugin
 
     The ``keyring_file`` plugin should not be used for regulatory compliance.
 
-To install the plugin, follow the `installing and uninstalling plugins
+To install the selected plugin, follow the `installing and uninstalling plugins
 <https://dev.mysql.com/doc/refman/8.0/en/plugin-loading.html>`__ instructions.
 
+Overview of the HashiCorp Vault
+--------------------------------
+
+The ``keyring_vault`` plugin can store encryption keys inside the ``HashiCorp
+Vault``.
+
+.. important::
+
+    The ``keyring_vault`` plugin works with kv secrets engine version 1
+
+.. seealso::
+
+    HashiCorp Documentation:
+
+    Installing Vault
+    https://www.vaultproject.io/docs/install/index.html
+
+    KV Secrets Engine - Version 1
+    https://www.vaultproject.io/docs/secrets/kv/kv-v1.html
+
+    Production Hardening
+    https://learn.hashicorp.com/vault/operations/production-hardening
+
+
 Loading the Keyring Plugin
---------------------------------------------------------------------------------
+------------------------------------------------------------------------------
 
-You should load the plugin at server startup with the ``-early-plugin-load``
-option to enable keyrings.
+Load the plugin at server startup with the ``early-plugin-load Option
+<https://dev.mysql.com/doc/refman/8.0/en/server-options.html#option_mysqld_early-plugin-load>`__
+ to enable keyrings. We recommend loading the plugin in the
+configuration file to facilitate the recovery for encrypted tables. Also, the
+redo log and undo log encryption cannot be used without ``--early-plugin-load``.
+In the startup process, the normal plugin load happens too late.
 
-We recommend the plugin should be loaded in the configuration file to facilitate
-recovery for encrypted tables. Also, the redo log and undo log encryption cannot
-be used without ``--early-plugin-load``. The normal plugin load happens too late
-in startup. 
-
-To use the keyring_vault, you can add this option to your configuration file:
-
-.. code-block:: guess
-
-    [mysqld]
-    early-plugin-load="keyring_vault=keyring_vault.so"
-    loose-keyring_vault_config="/home/mysql/keyring_vault.conf"
-
-.. note::
-
-    The keyring_vault extension, ".so" and the file location for the vault
-    configuration should be changed to match your operating system's extension
-    and operating system location. 
-
-You could also run the following command which loads the keyring_file plugin:
-
+Run the following command to load the keyring_file plugin:
 .. code-block:: bash
 
    $ mysqld --early-plugin-load="keyring_file=keyring_file.so"
@@ -62,18 +70,25 @@ You could also run the following command which loads the keyring_file plugin:
      use of double quotes ensures the semicolons do not create issues when the
      list is executed in a script.
 
-.. seealso::
+Another method is to add the following options to your configuration file.
+These statements load the keyring_vault plugin and the `keyring_vault_config`
+statement provides the location to the keyring_vault configuration file:
 
-   |MySQL| Documentation:
-      - `Installing a Keyring Plugin
-        <https://dev.mysql.com/doc/refman/8.0/en/keyring-installation.html>`__
-      - `The ` --early-plugin-load Option
-        <https://dev.mysql.com/doc/refman/8.0/en/server-options.html#option_mysqld_early-plugin-load>`__
+.. code-block:: guess
 
-Apart from installing the plugin you also must set the
-:variable:`keyring_vault_config` variable to point to the keyring_vault
-configuration file.
+    [mysqld]
+    early-plugin-load="keyring_vault=keyring_vault.so"
+    loose-keyring_vault_config="/home/mysql/keyring_vault.conf"
 
+.. note::
+
+    The keyring_vault extension, ".so", and the file location for the vault
+    configuration should be changed to match your operating system's extension
+    and operating system location.
+
+
+Describing the keyring_vault_config file
+-----------------------------------------
 The `keyring_vault_config` file has the following information:
 
 * ``vault_url`` - the Vault server address
@@ -87,7 +102,7 @@ The `keyring_vault_config` file has the following information:
   certificate, this variable points to the CA certificate used to sign the
   Vault's certificates
 
-This is an example of a configuration file: ::
+The following is a configuration file example: ::
 
   vault_url = https://vault.public.com:8202
   secret_mount_point = secret
@@ -96,11 +111,30 @@ This is an example of a configuration file: ::
 
 .. warning::
 
-    Each ``secret_mount_point`` must be used by only one server. If multiple
-    server use the same secret_mount_point, the behavior is unpredictable.
+    Each ``secret_mount_point`` must be used by only one server. Multiple
+    servers using the same secret_mount_point may cause unpredictable behavior.
+
+.. note::
+
+    Create a backup of the keyring configuration file or data file immediately
+    after creating the encrypted tablespace.
+    If you are using Master key encryption, do this step before master key
+    rotation and after master key rotation.
 
 The first time a key is fetched from a `keyring`, the `keyring_vault`
 communicates with the Vault server to retrieve the key type and data.
+
+Verifying Plugin is Active
+---------------------------
+
+To verify the keyring plugin is active, run the ``SHOW PLUGINS
+<https://dev.mysql.com/doc/refman/8.0/en/show-plugins.html>`_ statement or
+run a query on the ``INFORMATION_SCHEMA.PLUGINS`` table.
+
+Loading Keyring Encryption User-Defined Functions
+--------------------------------------------------
+
+You must also create keyring encryption UDFs.
 
 A user-created key deletion is only possible with the use of the keyring_udf
 plugin and deletes the key from the in-memory hash map and the Vault server.
@@ -121,10 +155,9 @@ must enable the ``keyring_udf`` plugin:
 
 .. note::
 
-    The ``keyring_udf`` plugin must be installed. Attempts to use the UDFs
+    The ``keyring_udf`` plugin must be installed. Any attempt to use a UDF
     without the ``keyring_udf`` plugin generates an error.
 
-You must also create keyring encryption UDFs.
 
 System Variables
 --------------------
@@ -147,14 +180,10 @@ configuration file.
   :scope: Global
   :vartype: Numeric
   :default: ``15``
- 
+
 Set the duration in seconds for the Vault server connection timeout. The
 default value is ``15``. The allowed range is from ``0`` to ``86400``. The
 timeout can be also disabled to wait an infinite amount of time by setting
 this variable to ``0``.
 
-.. seealso::
 
-    :ref:`vault`
-
-    :ref:`rotating-master-key`

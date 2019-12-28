@@ -4,7 +4,7 @@
 Working with Background Encryption Threads
 ================================================================================
 
-:Availabiliity: This feature is **Experimental**.
+:Availability: This feature is **Experimental**.
 
 Encryption threads in the background allow you to perform some encryption and
 decryption tasks in real-time. 

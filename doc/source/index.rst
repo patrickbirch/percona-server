@@ -132,19 +132,13 @@ Security Improvements
 
   security/pam_plugin
   security/data-at-rest-encryption
-  security/vault
   security/using-keyring-plugin
-  security/rotating-master-key
-  security/encrypting-tables
-  security/encrypting-tablespaces
-  security/encrypting-system-tablespace
-  security/encrypting-temporary-files
-  security/encrypting-binlogs
-  security/encrypting-redo-log
-  security/encrypting-undo-tablespace
   security/encrypting-threads
+  security/overview-encrypting-threads
+  security/enabling-threads
+  security/overview-master-key
+  security/enabling-master-key
   security/encrypting-doublewrite-buffers
-  security/verifying-encryption
   security/data-scrubbing
   security/ssl-improvement
   security/data-masking
