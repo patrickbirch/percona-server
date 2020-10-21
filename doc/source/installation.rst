@@ -51,24 +51,24 @@ In |Percona Server| :rn:`5.6.24-72.2` and newer, the single binary tarball was r
 
         .. code-block:: bash
 
-            $ locate libssl | grep "^/usr/lib/"
+            shell> locate libssl | grep "^/usr/lib/"
 
         In CentOS, run the following command: 
 
         .. code-block:: bash
 
-            $ ldconfig -p | grep ssl
+            shell> ldconfig -p | grep ss
 
 
-Download the appropriate binary tarball from the ``Linux - Generic`` `section <https://www.percona.com/downloads/Percona-Server-5.6/LATEST/binary/tarball/>`_ on the download page.
+Download the appropriate binary tarball from the ``Linux - Generic`` `section <https://www.percona.com/downloads/Percona-Server-5.6/LATEST/binary/tarball/>`_
+on the download page.
 
-Fetch and extract the correct binary
-tarball. For example for *Debian Wheezy*: 
+Fetch and extract the correct binary tarball. For example for *Debian Stretch*,
+run the following:
 
 .. code-block:: bash
 
-  $ wget http://www.percona.com/downloads/Percona-Server-5.6/Percona-Server-5.6.24-72.2/binary/tarball/Percona-Server-5.6.24-rel72.2-Linux.x86_64.ssl100.tar.gz
-
+  shell> wget http://www.percona.com/downloads/Percona-Server-5.6/Percona-Server-5.6.49-80.0/binary/tarball/Percona-Server-5.6.49-89.0-rd043d30-stretch-86_64.bundle.tar.gz
 
 .. _installing_from_source_tarball:
 
