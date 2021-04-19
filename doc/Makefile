@@ -6,6 +6,8 @@ SPHINXOPTS    =
 SPHINXBUILD   = sphinx-build
 PAPER         =
 BUILDDIR      = build
+UTILS_REPO    = https://github.com/Percona-Lab/percona-doc-utils/archive/master.tar.gz
+UTILS_DIR     = percona-doc-utils-master
 
 # Internal variables.
 PAPEROPT_a4     = -D latex_paper_size=a4
@@ -37,7 +39,12 @@ help:
 clean:
 	-rm -rf $(BUILDDIR)/*
 
-html:
+ext:
+	@echo "Downloading Percona documentation utils from repository..."
+	@mkdir -p $(BUILDDIR) && wget -O - $(UTILS_REPO) | tar xz -C $(BUILDDIR) && cp -r $(BUILDDIR)/$(UTILS_DIR)/sphinx/ext source
+
+
+html: ext
 	@echo "Downloading percona-theme ..."
 	@wget -O percona-theme.tar.gz https://www.percona.com/docs/theme-1-4/percona-server/5.6
 	@echo "Extracting theme."
@@ -112,7 +119,7 @@ latex:
 	@echo "Run \`make' in that directory to run these through (pdf)latex" \
 	      "(use \`make latexpdf' here to do that automatically)."
 
-latexpdf:
+latexpdf: ext
 	$(SPHINXBUILD) -b latex $(ALLSPHINXOPTS) $(BUILDDIR)/latex
 	@echo "Running LaTeX files through pdflatex..."
 	make -C $(BUILDDIR)/latex all-pdf
@@ -143,3 +150,10 @@ doctest:
 	$(SPHINXBUILD) -b doctest $(ALLSPHINXOPTS) $(BUILDDIR)/doctest
 	@echo "Testing of doctests in the sources finished, look at the " \
 	      "results in $(BUILDDIR)/doctest/output.txt."
+
+netlify: ext
+	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) -c source/conf-netlify $(BUILDDIR)/html
+	@echo
+	@echo "Netlify build finished. The HTML pages are in $(BUILDDIR)/html."
+
+
